@@ -1,114 +1,102 @@
 import streamlit as st
 import pandas as pd
 
-st.set_page_config(page_title="Start List Generator", layout="wide")
-
-# Initialize session state
+# Inizializza gli stati della sessione
 if 'data_a' not in st.session_state:
     st.session_state['data_a'] = pd.DataFrame(columns=[
-        'Heat Number', 'Lane Number', 'Athlete Name', 'Class & Section', 'School Name'
+        "Batteria", "Corsia", "Nome e Cognome", "Classe e Sezione", "Scuola"
     ])
 
 if 'data_b' not in st.session_state:
     st.session_state['data_b'] = pd.DataFrame(columns=[
-        'Heat Number', 'Lane Number', 'Race Time'
+        "Batteria", "Corsia", "Tempo"
     ])
 
-# Sidebar navigation
-page = st.sidebar.selectbox("Select Page", ["🏃 Athlete Entry", "⏱️ Race Times Entry", "📊 Start List"])
+# Sidebar di navigazione
+page = st.sidebar.radio("Vai a", ["Inserisci Atleti", "Inserisci Tempi", "Start List Finale"])
 
-# ---------------------- PAGE 1: Athlete Entry ----------------------
-if page == "🏃 Athlete Entry":
-    st.title("🏃 Athlete Entry – Data Source A")
-    st.markdown("Enter athlete details below:")
+# Pagina 1 – Inserimento Atleti
+if page == "Inserisci Atleti":
+    st.title("Inserimento Atleti (Tabella A)")
 
-    with st.form("athlete_form", clear_on_submit=True):
-        heat = st.number_input("Heat Number", min_value=1, step=1)
-        lane = st.number_input("Lane Number", min_value=1, step=1)
-        name = st.text_input("Athlete Name")
-        class_sec = st.text_input("Class & Section (e.g., 2B)")
-        school = st.text_input("School Name (optional)")
+    with st.form("form_a"):
+        batteria = st.number_input("Numero Batteria", min_value=1, step=1)
+        corsia = st.number_input("Numero Corsia", min_value=1, step=1)
+        nome_cognome = st.text_input("Nome e Cognome")
+        classe_sezione = st.text_input("Classe e Sezione (es. 2B)")
+        scuola = st.text_input("Nome della Scuola (opzionale)")
 
-        submitted = st.form_submit_button("Add Athlete")
+        submitted = st.form_submit_button("Aggiungi Atleta")
+
         if submitted:
-            if name and class_sec:
-                new_row = {
-                    'Heat Number': heat,
-                    'Lane Number': lane,
-                    'Athlete Name': name,
-                    'Class & Section': class_sec,
-                    'School Name': school
-                }
-st.session_state['data_a'] = pd.concat(
-    [st.session_state['data_a'], pd.DataFrame([new_row])],
-    ignore_index=True
-)
-                st.success("Athlete added.")
-            else:
-                st.error("Please fill in all required fields.")
+            new_row = {
+                "Batteria": batteria,
+                "Corsia": corsia,
+                "Nome e Cognome": nome_cognome,
+                "Classe e Sezione": classe_sezione,
+                "Scuola": scuola
+            }
+            # CORRETTO: usa concat al posto di append
+            st.session_state['data_a'] = pd.concat(
+                [st.session_state['data_a'], pd.DataFrame([new_row])],
+                ignore_index=True
+            )
+            st.success("Atleta aggiunto!")
 
-    st.subheader("Current Athlete Table")
     st.dataframe(st.session_state['data_a'])
 
-    if st.download_button("Download as CSV", st.session_state['data_a'].to_csv(index=False), "athletes.csv"):
-        st.success("Download started.")
+# Pagina 2 – Inserimento Tempi
+elif page == "Inserisci Tempi":
+    st.title("Inserimento Tempi (Tabella B)")
 
-# ---------------------- PAGE 2: Race Times Entry ----------------------
-elif page == "⏱️ Race Times Entry":
-    st.title("⏱️ Race Times Entry – Data Source B")
-    st.markdown("Enter race results below:")
+    with st.form("form_b"):
+        batteria = st.number_input("Numero Batteria", min_value=1, step=1, key="batt_b")
+        corsia = st.number_input("Numero Corsia", min_value=1, step=1, key="corsia_b")
+        tempo = st.text_input("Tempo (secondi.centesimi)", key="tempo_b")
 
-    with st.form("race_form", clear_on_submit=True):
-        heat = st.number_input("Heat Number", min_value=1, step=1, key="heat_b")
-        lane = st.number_input("Lane Number", min_value=1, step=1, key="lane_b")
-        time = st.text_input("Race Time (e.g., 12.45)", key="time_b")
+        submitted = st.form_submit_button("Aggiungi Tempo")
 
-        submitted = st.form_submit_button("Add Time")
         if submitted:
-            if time:
-                new_row = {
-                    'Heat Number': heat,
-                    'Lane Number': lane,
-                    'Race Time': time
-                }
-                st.session_state['data_b'] = st.session_state['data_b'].append(new_row, ignore_index=True)
-                st.success("Race time added.")
-            else:
-                st.error("Please enter a valid time.")
+            new_row = {
+                "Batteria": batteria,
+                "Corsia": corsia,
+                "Tempo": tempo
+            }
+            # CORRETTO: usa concat al posto di append
+            st.session_state['data_b'] = pd.concat(
+                [st.session_state['data_b'], pd.DataFrame([new_row])],
+                ignore_index=True
+            )
+            st.success("Tempo aggiunto!")
 
-    st.subheader("Current Time Table")
     st.dataframe(st.session_state['data_b'])
 
-    if st.download_button("Download as CSV", st.session_state['data_b'].to_csv(index=False), "times.csv"):
-        st.success("Download started.")
+# Pagina 3 – Start List Finale
+elif page == "Start List Finale":
+    st.title("Start List Finale")
 
-# ---------------------- PAGE 3: Start List View ----------------------
-elif page == "📊 Start List":
-    st.title("📊 Start List / Results View")
-
-    df_merged = pd.merge(
-        st.session_state['data_a'],
-        st.session_state['data_b'],
-        on=["Heat Number", "Lane Number"],
-        how="left"
-    )
-
-    if df_merged.empty:
-        st.warning("No data to display. Please add data in the previous pages.")
+    if st.session_state['data_a'].empty or st.session_state['data_b'].empty:
+        st.warning("Inserisci prima almeno un atleta e un tempo.")
     else:
-        heat_groups = df_merged.groupby("Heat Number")
+        # Merge tra le due tabelle su Batteria e Corsia
+        merged = pd.merge(
+            st.session_state['data_a'],
+            st.session_state['data_b'],
+            on=["Batteria", "Corsia"],
+            how="inner"
+        )
 
-        for heat, group in heat_groups:
-            st.subheader(f"Heat {int(heat)}")
-            try:
-                group['Race Time (sec)'] = group['Race Time'].astype(float)
-                group_sorted = group.sort_values("Race Time (sec)")
-            except:
-                group_sorted = group
+        # Ordina per batteria e tempo crescente
+        try:
+            merged["Tempo_ordinabile"] = merged["Tempo"].apply(lambda x: float(x.replace(",", ".").strip()))
+            merged = merged.sort_values(by=["Batteria", "Tempo_ordinabile"])
+        except ValueError:
+            st.error("Errore nel formato del tempo. Usa formato numerico: es. 10.34")
 
-            st.dataframe(group_sorted[[
-                "Athlete Name", "Class & Section", "Lane Number", "Race Time"
-            ]])
-
-        if st.download_button("Download Full Start List", df_merged.to_csv(index=False), "start_list.csv"):
-            st.success("Start list exported.")
+        st.subheader("Classifiche per Batteria")
+        for batteria in sorted(merged["Batteria"].unique()):
+            st.markdown(f"### Batteria {batteria}")
+            classifica = merged[merged["Batteria"] == batteria][[
+                "Corsia", "Nome e Cognome", "Classe e Sezione", "Tempo"
+            ]]
+            st.dataframe(classifica.reset_index(drop=True))
