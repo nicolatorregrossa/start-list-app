@@ -39,7 +39,10 @@ if page == "🏃 Athlete Entry":
                     'Class & Section': class_sec,
                     'School Name': school
                 }
-                st.session_state['data_a'] = st.session_state['data_a'].append(new_row, ignore_index=True)
+st.session_state['data_a'] = pd.concat(
+    [st.session_state['data_a'], pd.DataFrame([new_row])],
+    ignore_index=True
+)
                 st.success("Athlete added.")
             else:
                 st.error("Please fill in all required fields.")
