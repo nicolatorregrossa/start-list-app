@@ -12,10 +12,8 @@ if 'data_b' not in st.session_state:
         "Batteria", "Corsia", "Tempo"
     ])
 
-# Sidebar di navigazione
 page = st.sidebar.radio("Vai a", ["Inserisci Atleti", "Inserisci Tempi", "Start List Finale"])
 
-# Pagina 1 – Inserimento Atleti
 if page == "Inserisci Atleti":
     st.title("Inserimento Atleti (Tabella A)")
 
