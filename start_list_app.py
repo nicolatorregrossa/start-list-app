@@ -66,30 +66,32 @@ elif page == "Inserisci Tempi":
     st.dataframe(st.session_state['data_b'])
 
 elif page == "Risultati Finali":
-    st.title("Risultati Finali")
 
-    if st.session_state['data_a'].empty or st.session_state['data_b'].empty:
-        st.warning("Inserisci prima almeno un atleta e un tempo.")
+import streamlit as st
+import pandas as pd
+
+st.title("Risultati Finali")
+
+if 'data_a' in st.session_state and 'data_b' in st.session_state:
+    df_a = st.session_state['data_a']
+    df_b = st.session_state['data_b']
+
+    if not df_a.empty and not df_b.empty:
+        merged = pd.merge(df_a, df_b, on=['batteria', 'corsia'])
+
+        merged.sort_values(by=['batteria', 'tempo'], inplace=True)
+
+        batterie = merged['batteria'].unique()
+        for b in sorted(batterie):
+            st.subheader(f"Batteria {b}")
+            classifica = merged[merged['batteria'] == b][
+                ['corsia', 'nome', 'classe', 'tempo']
+            ].reset_index(drop=True)
+            classifica.index += 1  # per numerare le posizioni
+            st.table(classifica)
     else:
-        # Merge tra le due tabelle su Batteria e Corsia
-        merged = pd.merge(
-            st.session_state['data_a'],
-            st.session_state['data_b'],
-            on=["Batteria", "Corsia"],
-            how="inner"
-        )
+        st.warning("⚠️ Inserisci almeno un dato in entrambe le tabelle.")
+else:
+    st.warning("⚠️ Le tabelle non sono ancora state inizializzate.")
 
-        # Ordina per batteria e tempo crescente
-        try:
-            merged["Tempo_ordinabile"] = merged["Tempo"].apply(lambda x: float(x.replace(",", ".").strip()))
-            merged = merged.sort_values(by=["Batteria", "Tempo_ordinabile"])
-        except ValueError:
-            st.error("Errore nel formato del tempo. Usa formato numerico: es. 10.34")
-
-        st.subheader("Classifiche per Batteria")
-        for batteria in sorted(merged["Batteria"].unique()):
-            st.markdown(f"### Batteria {batteria}")
-            classifica = merged[merged["Batteria"] == batteria][[
-                "Corsia", "Nome e Cognome", "Classe e Sezione", "Tempo"
-            ]]
             st.dataframe(classifica.reset_index(drop=True))
