@@ -36,7 +36,6 @@ if page == "Inserisci Atleti":
                 "Classe e Sezione": classe_sezione,
                 "Scuola": scuola
             }
-            # CORRETTO: usa concat al posto di append
             st.session_state['data_a'] = pd.concat(
                 [st.session_state['data_a'], pd.DataFrame([new_row])],
                 ignore_index=True
@@ -45,7 +44,6 @@ if page == "Inserisci Atleti":
 
     st.dataframe(st.session_state['data_a'])
 
-# Pagina 2 – Inserimento Tempi
 elif page == "Inserisci Tempi":
     st.title("Inserimento Tempi (Tabella B)")
 
@@ -62,7 +60,6 @@ elif page == "Inserisci Tempi":
                 "Corsia": corsia,
                 "Tempo": tempo
             }
-            # CORRETTO: usa concat al posto di append
             st.session_state['data_b'] = pd.concat(
                 [st.session_state['data_b'], pd.DataFrame([new_row])],
                 ignore_index=True
@@ -71,9 +68,8 @@ elif page == "Inserisci Tempi":
 
     st.dataframe(st.session_state['data_b'])
 
-# Pagina 3 – Start List Finale
-elif page == "Start List Finale":
-    st.title("Start List Finale")
+elif page == "Risultati Finali":
+    st.title("Risultati Finali")
 
     if st.session_state['data_a'].empty or st.session_state['data_b'].empty:
         st.warning("Inserisci prima almeno un atleta e un tempo.")
