@@ -1,7 +1,6 @@
 import streamlit as st
 import pandas as pd
 
-# Inizializza gli stati della sessione
 if 'data_a' not in st.session_state:
     st.session_state['data_a'] = pd.DataFrame(columns=[
         "Batteria", "Corsia", "Nome e Cognome", "Classe e Sezione", "Scuola"
